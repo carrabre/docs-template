@@ -1,0 +1,67 @@
+---
+title: "Getting started"
+description: "Install the starter, run it locally, and learn where to make your first edits."
+---
+
+This page gets the starter running on your machine. You only need Node.js, npm, and a text editor.
+
+## Prerequisites
+
+- Node.js 20 or later.
+- npm, which ships with Node.js.
+- A GitHub, GitLab, or Bitbucket repository if you plan to deploy on Vercel.
+
+## Install dependencies
+
+From the project root, install packages:
+
+```bash
+npm install
+```
+
+This installs Next.js, React, the MDX renderer, search helpers, icons, syntax highlighting, and the optional AI assistant dependency.
+
+## Run locally
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+The development server reloads when you edit `.mdx`, `.ts`, `.tsx`, or CSS files.
+
+## Build before you ship
+
+Run a production build when you want to check that the site is ready to deploy:
+
+```bash
+npm run build
+```
+
+You can also run TypeScript checks without building:
+
+```bash
+npm run type-check
+```
+
+## Project layout
+
+- `site.config.ts`: Site name, URL, navigation, metadata, theme, assistant settings, and MCP settings.
+- Root-level `.mdx` files: Documentation pages.
+- `components/`: Shared UI for the docs shell and MDX components.
+- `lib/`: Content loading, search, Markdown export, and helper utilities.
+- `app/`: Next.js routes, layout, API routes, and global CSS.
+- `public/`: Static assets such as the favicon and logo mark.
+
+## Make your first change
+
+1. Open `site.config.ts`.
+2. Change `name`, `shortName`, `description`, and `url`.
+3. Open `index.mdx`.
+4. Replace the starter copy with your own project overview.
+5. Restart the dev server if you changed environment variables.
+
+Next step: [Write content](/write-content)

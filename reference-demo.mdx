@@ -1,0 +1,90 @@
+---
+title: "Reference demo"
+description: "Preview dummy API reference content, request examples, response examples, and generated spec pages."
+---
+
+Use this page to inspect reference-style documentation. It includes hand-authored API fields and links to generated OpenAPI and AsyncAPI stub pages.
+
+## Example endpoint
+
+<Badge>POST</Badge> `POST /v1/demo-pages`
+
+Create a sample documentation page in a placeholder project.
+
+## Parameters
+
+<ParamField name="Authorization" type="string header" required>
+Bearer token for your own API. This is dummy data.
+</ParamField>
+
+<ParamField name="workspaceId" type="string path" required>
+The example workspace that owns the page.
+</ParamField>
+
+<ParamField name="dryRun" type="boolean query" optional>
+Preview the change without saving it.
+</ParamField>
+
+## Request body
+
+<ParamField name="title" type="string" required>
+Human-readable page title.
+</ParamField>
+
+<ParamField name="body" type="string" required>
+Markdown or MDX content for the page.
+</ParamField>
+
+<ParamField name="tags" type="string[]" optional>
+Labels used for filtering or search.
+</ParamField>
+
+<RequestExample>
+
+```json title="Create a page"
+{
+  "title": "Install the CLI",
+  "body": "Run npm install -g example-cli.",
+  "tags": ["setup", "cli"]
+}
+```
+
+</RequestExample>
+
+## Responses
+
+<ResponseField name="201" type="HTTP response">
+The page was created.
+</ResponseField>
+
+<ResponseField name="400" type="HTTP response">
+The request body was missing a required field.
+</ResponseField>
+
+<ResponseExample>
+
+```json title="Created page"
+{
+  "id": "page_123",
+  "slug": "install-the-cli",
+  "title": "Install the CLI",
+  "status": "published"
+}
+```
+
+</ResponseExample>
+
+## Generated spec pages
+
+The starter also has dummy OpenAPI and AsyncAPI files under `examples/`. They generate extra pages in the **API reference** navigation group.
+
+<Columns columns={2}>
+  <Card title="OpenAPI: List demo pages" icon="compass" href="/reference/get-v1-demo-pages">
+    Generated from `examples/openapi.json`.
+  </Card>
+  <Card title="AsyncAPI: Subscribe to page events" icon="message-square" href="/reference/subscribe-docs-page-events">
+    Generated from `examples/asyncapi.yaml`.
+  </Card>
+</Columns>
+
+Next step: [Deploy to Vercel](/deploy-to-vercel)

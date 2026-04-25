@@ -1,0 +1,38 @@
+asyncapi: "2.6.0"
+info:
+  title: Demo Docs Events
+  version: "0.1.0"
+  description: Dummy event data for previewing generated AsyncAPI pages.
+channels:
+  docs.page.events:
+    subscribe:
+      summary: Subscribe to docs page events
+      description: Receive a message when a placeholder docs page is published.
+      message:
+        name: PagePublished
+        title: Page published
+        summary: A page was published in the demo docs project.
+        payload:
+          type: object
+          properties:
+            pageId:
+              type: string
+            title:
+              type: string
+            publishedAt:
+              type: string
+              format: date-time
+    publish:
+      summary: Publish docs page events
+      description: Send a placeholder docs page publication event.
+      message:
+        name: PagePublishRequested
+        title: Page publish requested
+        summary: A page publication was requested in the demo docs project.
+        payload:
+          type: object
+          properties:
+            pageId:
+              type: string
+            requestedBy:
+              type: string

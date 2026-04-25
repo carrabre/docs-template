@@ -1,0 +1,58 @@
+---
+title: "Search, AI, and MCP"
+description: "Use local search, optional AI chat, external AI context actions, Markdown exports, llms.txt, and the MCP endpoint."
+---
+
+The starter includes discovery features that work well for both humans and AI tools. Search works without setup. AI chat needs your own API key.
+
+## Local search
+
+Click **Search** or press `Command+K` on macOS and `Ctrl+K` on Windows or Linux.
+
+Search indexes:
+
+- Page titles.
+- Page descriptions.
+- Section headings.
+- Body text.
+- Generated Markdown text for each page.
+
+## Markdown exports
+
+Every page can be viewed as Markdown through the page action menu.
+
+The app also serves:
+
+- `/llms.txt`: A compact index of pages.
+- `/llms-full.txt`: A full Markdown export of all listed pages.
+- `/.well-known/llms.txt`: A compatibility route for tools that look under `.well-known`.
+- `/.well-known/llms-full.txt`: A compatibility route for the full export.
+
+## Optional AI chat
+
+AI chat is disabled until you add an API key:
+
+```bash
+OPENAI_API_KEY=your_api_key
+OPENAI_MODEL=gpt-5.4-mini
+```
+
+When enabled, the assistant uses public docs excerpts, allowlisted source files, and optional web search. It does not read `.env`, `node_modules`, lockfiles, or files outside the allowlist in `lib/codebase-context.ts`.
+
+<Warning>
+AI chat uses a paid API key that you provide. Vercel can host the app on the free Hobby plan, but API usage is billed by your AI provider.
+</Warning>
+
+## External AI actions
+
+The page action menu can copy the current page or open a prefilled prompt in tools such as ChatGPT, Claude, Perplexity, Grok, Google AI Studio, Devin, and Windsurf.
+
+Choose which actions appear by editing `siteConfig.contextual.options`.
+
+## MCP endpoint
+
+The starter includes a minimal `/mcp` endpoint with tools for searching and reading documentation pages.
+
+Copy the MCP URL or install command from the page action menu. The endpoint uses the same docs search and Markdown helpers as the rest of the app.
+
+Next step: [Deploy to Vercel](/deploy-to-vercel)

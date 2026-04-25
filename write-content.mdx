@@ -1,0 +1,119 @@
+---
+title: "Write content"
+description: "Create MDX documentation pages with frontmatter, links, callouts, cards, steps, tabs, and code examples."
+---
+
+Write pages as MDX files in the project root. Each page should teach one clear task, concept, or reference topic.
+
+## Create a page
+
+Add a file such as `installation.mdx`:
+
+```mdx
+---
+title: "Installation"
+description: "Install the package and verify that it works."
+---
+
+This page explains how to install the package.
+
+## Install
+
+\`\`\`bash
+npm install your-package
+\`\`\`
+```
+
+Then add the page slug to `site.config.ts`:
+
+```ts
+navigation: {
+  groups: [
+    {
+      group: "Start here",
+      pages: ["index", "getting-started", "installation"],
+    },
+  ],
+}
+```
+
+The slug is the file path without `.mdx`.
+
+## Frontmatter
+
+Every page should include:
+
+- `title`: The page heading and search result title.
+- `description`: A short summary for search, metadata, and page previews.
+- `sidebarTitle`: Optional shorter label for navigation.
+
+## Links
+
+Use root-relative links for internal pages:
+
+```mdx
+Read [Deploy to Vercel](/deploy-to-vercel).
+```
+
+Use full URLs for external pages:
+
+```mdx
+Read the [Next.js documentation](https://nextjs.org/docs).
+```
+
+## Built-in MDX components
+
+Use components when they make the content easier to scan.
+
+<Columns columns={2}>
+  <Card title="Cards" icon="compass" href="/customize-site">
+    Link readers to related pages.
+  </Card>
+  <Card title="Callouts" icon="circle-help">
+    Highlight notes, tips, checks, and warnings.
+  </Card>
+</Columns>
+
+<Tip>
+Keep components practical. Plain Markdown is usually best for ordinary paragraphs and lists.
+</Tip>
+
+## Steps
+
+Use steps for ordered workflows:
+
+<Steps>
+  <Step>Open the file you want to edit.</Step>
+  <Step>Make one focused change.</Step>
+  <Step>Run `npm run type-check` before you publish.</Step>
+</Steps>
+
+## Tabs
+
+Use tabs when readers need to choose one option:
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```bash
+    pnpm install
+    ```
+  </Tab>
+</Tabs>
+
+## Code blocks
+
+Code fences support titles, line numbers, highlighting, focus, wrapping, and copy buttons:
+
+```ts title="site.config.ts" lines {2}
+export const siteConfig = {
+  name: "Your Docs",
+  shortName: "Docs",
+};
+```
+
+Next step: [Customize the site](/customize-site)

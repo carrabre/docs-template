@@ -1,0 +1,89 @@
+---
+title: "Customize the site"
+description: "Update branding, navigation, metadata, theme colors, header links, assistant labels, and MCP settings."
+---
+
+Most template customization starts in `site.config.ts`. Use it as the public interface for your docs site.
+
+## Change the site identity
+
+Update the top-level fields:
+
+```ts
+export const siteConfig = {
+  name: "Acme Docs",
+  shortName: "Acme",
+  description: "Documentation for Acme projects.",
+  url: "https://docs.example.com",
+};
+```
+
+For Vercel previews and production deployments, set `NEXT_PUBLIC_SITE_URL` so generated Markdown links and MCP URLs use the correct origin.
+
+## Update navigation
+
+Navigation groups are defined by page slugs:
+
+```ts
+navigation: {
+  groups: [
+    {
+      group: "Guides",
+      pages: ["index", "getting-started", "installation"],
+    },
+  ],
+}
+```
+
+Add each new `.mdx` file to a group. Pages that are not listed can still exist, but they will not appear in the sidebar or generated page order.
+
+## Update header links
+
+Use concise labels for top navigation:
+
+```ts
+header: {
+  links: [
+    { label: "Start", href: "/getting-started" },
+    { label: "Deploy", href: "/deploy-to-vercel" },
+  ],
+}
+```
+
+## Change colors
+
+Theme colors live in two places:
+
+- `site.config.ts` controls browser theme colors and theme storage keys.
+- `app/globals.css` controls the visual palette, spacing, typography, and component styles.
+
+Replace the logo by editing `public/logo/docs-mark.svg` or pointing `siteConfig.logo.mark` to another file in `public/`.
+
+## Configure AI and MCP labels
+
+The assistant and MCP actions are optional. Edit these fields when you rename the template:
+
+```ts
+assistant: {
+  name: "Docs assistant",
+  supportPath: "/troubleshooting",
+},
+mcp: {
+  name: "Acme Docs",
+  route: "/mcp",
+}
+```
+
+## Environment variables
+
+Create `.env.local` when you need environment-specific settings:
+
+```bash
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-5.4-mini
+```
+
+Leave `OPENAI_API_KEY` empty if you do not want AI chat.
+
+Next step: [Search, AI, and MCP](/search-ai-and-mcp)

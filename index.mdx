@@ -1,0 +1,53 @@
+---
+title: "Next.js Docs Starter"
+description: "Launch a clean documentation site with MDX, local search, optional AI help, and a Vercel-ready Next.js app."
+---
+
+<div className="starter-overview-hero">
+  <p className="starter-overview-kicker">Open source docs template</p>
+  <p className="starter-overview-summary">Use this starter to publish project documentation without a docs-specific SaaS. Write MDX, customize one typed config file, run the Next.js app locally, and deploy on Vercel's free tier.</p>
+  <div className="starter-overview-actions">
+    <a className="starter-overview-button starter-overview-button-primary" href="/getting-started">Get started</a>
+    <a className="starter-overview-button" href="/deploy-to-vercel">Deploy to Vercel</a>
+  </div>
+</div>
+
+This template gives you a small, practical documentation site that works like a normal Next.js app. It includes navigation, MDX pages, theme switching, local search, generated Markdown pages, `llms.txt`, and optional AI tools.
+
+## What is included
+
+- A Next.js App Router site that renders root-level `.mdx` pages.
+- A typed `site.config.ts` file for metadata, navigation, theme, header links, AI actions, and MCP settings.
+- Local search across page titles, descriptions, headings, and body text.
+- Markdown versions of every page for readers and AI tools.
+- Optional AI chat and external AI context actions.
+- A minimal MCP endpoint for searching and reading docs.
+- Vercel-friendly defaults that work on the free Hobby plan for personal projects.
+
+## How the starter is organized
+
+<Columns columns={2}>
+  <Card title="Set up the app" icon="rocket" href="/getting-started">
+    Install dependencies, start the local server, and learn the project layout.
+  </Card>
+  <Card title="Write content" icon="message-square" href="/write-content">
+    Add MDX pages, frontmatter, callouts, cards, tabs, steps, and code blocks.
+  </Card>
+  <Card title="Customize the site" icon="settings-2" href="/customize-site">
+    Update branding, navigation, metadata, theme colors, and header links.
+  </Card>
+  <Card title="Deploy on Vercel" icon="compass" href="/deploy-to-vercel">
+    Connect your repository and publish the site with Vercel's Next.js defaults.
+  </Card>
+</Columns>
+
+## Quick start
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000` to view the docs.
+
+Next step: [Getting started](/getting-started)

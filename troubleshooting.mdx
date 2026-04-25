@@ -1,0 +1,61 @@
+---
+title: "Troubleshooting"
+description: "Fix common local development, build, deployment, search, assistant, and MCP issues."
+---
+
+Use this page when the starter does not behave as expected.
+
+## The dev server will not start
+
+Check that dependencies are installed:
+
+```bash
+npm install
+```
+
+Then restart the server:
+
+```bash
+npm run dev
+```
+
+If another app is using port `3000`, Next.js may offer a different port. Open the URL shown in your terminal.
+
+## A page returns 404
+
+Check that:
+
+- The `.mdx` file exists in the expected path.
+- The slug in `site.config.ts` matches the file path without `.mdx`.
+- Internal links start with `/` and do not include `.mdx`.
+
+## Search does not find a page
+
+Search only includes pages listed in navigation. Add the page slug to `siteConfig.navigation.groups`.
+
+## The AI assistant is disabled
+
+Add `OPENAI_API_KEY` to `.env.local` for local development or to Vercel environment variables for production.
+
+Restart the dev server after changing `.env.local`.
+
+## The assistant gives generic answers
+
+Make sure the relevant page is listed in navigation. The assistant relies on the same page set as search and `llms.txt`.
+
+## MCP install actions do not connect
+
+Check that `NEXT_PUBLIC_SITE_URL` points to the deployed site and that `/mcp` opens in the browser. The page should return basic endpoint information for `GET` requests.
+
+## Vercel build fails
+
+Run the same checks locally:
+
+```bash
+npm run type-check
+npm run build
+```
+
+Fix local errors first, then push again. Vercel uses the same Next.js project settings by default.
+
+Next step: [Contributing](/contributing)

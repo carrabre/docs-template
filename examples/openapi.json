@@ -1,0 +1,133 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Demo Docs API",
+    "version": "0.1.0",
+    "description": "Dummy API data for previewing generated reference pages."
+  },
+  "paths": {
+    "/v1/demo-pages": {
+      "get": {
+        "summary": "List demo pages",
+        "description": "Return a paginated list of placeholder documentation pages.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of pages to return.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from the previous response.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of demo pages."
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a demo page",
+        "description": "Create a placeholder documentation page.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoPageCreate"
+              },
+              "example": {
+                "title": "Install the CLI",
+                "body": "Run npm install -g example-cli."
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The demo page was created."
+          },
+          "400": {
+            "description": "The request body was invalid."
+          }
+        }
+      }
+    },
+    "/v1/demo-pages/{pageId}": {
+      "get": {
+        "summary": "Get a demo page",
+        "description": "Fetch one placeholder documentation page by ID.",
+        "parameters": [
+          {
+            "name": "pageId",
+            "in": "path",
+            "required": true,
+            "description": "Unique demo page ID.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested demo page."
+          },
+          "404": {
+            "description": "No demo page exists with that ID."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DemoPage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "published"]
+          }
+        },
+        "required": ["id", "slug", "title", "status"]
+      },
+      "DemoPageCreate": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["title", "body"]
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+---
+title: "Deploy to Vercel"
+description: "Publish the Next.js documentation app on Vercel using Git integration and free Hobby plan defaults."
+---
+
+This starter is a standard Next.js app, so Vercel can deploy it with zero custom build setup.
+
+## Prepare the repository
+
+Before you deploy:
+
+```bash
+npm run type-check
+npm run build
+```
+
+Commit your changes and push them to GitHub, GitLab, or Bitbucket.
+
+## Import the project
+
+1. Open the Vercel dashboard.
+2. Click **Add New Project**.
+3. Import your repository.
+4. Keep the detected framework as **Next.js**.
+5. Keep the default install, build, and output settings.
+6. Click **Deploy**.
+
+Vercel creates a production deployment and preview deployments for future branches and pull requests.
+
+## Set environment variables
+
+Add only the variables you need:
+
+```bash
+NEXT_PUBLIC_SITE_URL=https://your-docs-domain.example
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-5.4-mini
+```
+
+Use your real production URL for `NEXT_PUBLIC_SITE_URL`. Leave `OPENAI_API_KEY` unset if you do not want AI chat in production.
+
+## Use the free tier
+
+The template is designed for personal and open-source docs sites that fit Vercel's free Hobby plan. Keep the site mostly static, avoid adding paid services unless you need them, and check Vercel's current plan documentation before relying on specific limits.
+
+## Add a custom domain
+
+After the first deployment:
+
+1. Open the Vercel project.
+2. Go to **Settings**.
+3. Open **Domains**.
+4. Add your domain.
+5. Follow the DNS instructions shown by Vercel.
+
+Next step: [Troubleshooting](/troubleshooting)

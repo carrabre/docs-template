@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 
+import { AnalyticsHooks } from "@/components/analytics-hooks";
 import { siteConfig } from "@/site.config";
 import "./globals.css";
 
@@ -55,6 +56,7 @@ const themeScript = `
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
+  applicationName: siteConfig.name,
   title: {
     default: siteConfig.metadata.title.default,
     template: siteConfig.metadata.title.template,
@@ -62,6 +64,18 @@ export const metadata: Metadata = {
   description: siteConfig.metadata.description,
   icons: {
     icon: "/favicon.svg",
+  },
+  openGraph: {
+    type: "website",
+    url: siteConfig.url,
+    title: siteConfig.metadata.title.default,
+    description: siteConfig.metadata.description,
+    siteName: siteConfig.name,
+  },
+  twitter: {
+    card: "summary",
+    title: siteConfig.metadata.title.default,
+    description: siteConfig.metadata.description,
   },
 };
 
@@ -75,13 +89,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body>
         <Script
           id="docs-starter-theme-init"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: themeScript }}
         />
+        <AnalyticsHooks />
         {children}
       </body>
     </html>

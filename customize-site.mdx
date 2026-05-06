@@ -1,6 +1,6 @@
 ---
 title: "Customize the site"
-description: "Update branding, navigation, metadata, theme colors, header links, assistant labels, and MCP settings."
+description: "Update branding, navigation, metadata, theme colors, header links, API references, assistant labels, and MCP settings."
 ---
 
 Most template customization starts in `site.config.ts`. Use it as the public interface for your docs site.
@@ -22,7 +22,7 @@ For Vercel previews and production deployments, set `NEXT_PUBLIC_SITE_URL` so ge
 
 ## Update navigation
 
-Navigation groups are defined by page slugs:
+Navigation can stay simple with page slugs:
 
 ```ts
 navigation: {
@@ -37,6 +37,34 @@ navigation: {
 
 Add each new `.mdx` file to a group. Pages that are not listed can still exist, but they will not appear in the sidebar or generated page order.
 
+You can also use richer entries when the site needs more structure:
+
+```ts
+navigation: {
+  groups: [
+    {
+      group: "Guides",
+      icon: "book-open",
+      pages: [
+        { page: "getting-started", icon: "terminal", tag: "Start" },
+        {
+          group: "Advanced",
+          pages: ["search-ai-and-mcp", "quality-checklist"],
+        },
+        {
+          label: "Next.js docs",
+          href: "https://nextjs.org/docs",
+          icon: "external-link",
+          tag: "External",
+        },
+      ],
+    },
+  ],
+}
+```
+
+The navigation parser supports nested groups, tabs, anchors, dropdowns, menus, versions, languages, icons, tags, external links, and generated API sections.
+
 ## Update header links
 
 Use concise labels for top navigation:
@@ -49,6 +77,26 @@ header: {
   ],
 }
 ```
+
+Header links can also include `children` to create a dropdown menu.
+
+## Configure API references
+
+Point `siteConfig.api` at local OpenAPI or AsyncAPI files:
+
+```ts
+api: {
+  openapi: "examples/openapi.json",
+  asyncapi: "examples/asyncapi.yaml",
+  playground: {
+    enabled: true,
+    route: "/api-reference",
+    title: "API playground",
+  },
+}
+```
+
+The starter generates reference pages for endpoints and events. The optional Scalar playground at `/api-reference` renders the OpenAPI file for interactive exploration.
 
 ## Change colors
 
@@ -82,8 +130,23 @@ Create `.env.local` when you need environment-specific settings:
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-5.4-mini
+DOCS_ASSISTANT_MAX_CONTEXT_CHARS=80000
+NEXT_PUBLIC_DOCS_VOICE_ASSISTANT=false
+DOCS_VOICE_ASSISTANT_ENABLED=false
+OPENAI_REALTIME_MODEL=gpt-realtime
+OPENAI_REALTIME_VOICE=marin
+OPENAI_REALTIME_VOICE_FEMALE=marin
+OPENAI_REALTIME_VOICE_MALE=cedar
+NEXT_PUBLIC_OPENAI_REALTIME_VOICE_FEMALE=marin
+NEXT_PUBLIC_OPENAI_REALTIME_VOICE_MALE=cedar
+OPENAI_REALTIME_TRANSCRIPTION_MODEL=gpt-4o-transcribe
+NEXT_PUBLIC_DOCS_EDIT_URL=
+NEXT_PUBLIC_DOCS_FEEDBACK_ENDPOINT=
+NEXT_PUBLIC_DOCS_ANALYTICS=false
+NEXT_PUBLIC_DOCS_ANALYTICS_SCRIPT_URL=
+NEXT_PUBLIC_DOCS_ANALYTICS_WEBSITE_ID=
 ```
 
-Leave `OPENAI_API_KEY` empty if you do not want AI chat.
+Leave `OPENAI_API_KEY` empty if you do not want the top-bar **Chat** button to use AI.
 
 Next step: [Search, AI, and MCP](/search-ai-and-mcp)

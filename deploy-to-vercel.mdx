@@ -10,6 +10,8 @@ This starter is a standard Next.js app, so Vercel can deploy it with zero custom
 Before you deploy:
 
 ```bash
+npm run validate:docs
+npm run check:links
 npm run type-check
 npm run build
 ```
@@ -35,9 +37,21 @@ Add only the variables you need:
 NEXT_PUBLIC_SITE_URL=https://your-docs-domain.example
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-5.4-mini
+DOCS_ASSISTANT_MAX_CONTEXT_CHARS=80000
+NEXT_PUBLIC_DOCS_VOICE_ASSISTANT=false
+DOCS_VOICE_ASSISTANT_ENABLED=false
+OPENAI_REALTIME_MODEL=gpt-realtime
+OPENAI_REALTIME_VOICE=marin
+OPENAI_REALTIME_VOICE_FEMALE=marin
+OPENAI_REALTIME_VOICE_MALE=cedar
+NEXT_PUBLIC_OPENAI_REALTIME_VOICE_FEMALE=marin
+NEXT_PUBLIC_OPENAI_REALTIME_VOICE_MALE=cedar
+OPENAI_REALTIME_TRANSCRIPTION_MODEL=gpt-4o-transcribe
 ```
 
-Use your real production URL for `NEXT_PUBLIC_SITE_URL`. Leave `OPENAI_API_KEY` unset if you do not want AI chat in production.
+Use your real production URL for `NEXT_PUBLIC_SITE_URL`. Leave `OPENAI_API_KEY` unset if you do not want AI chat or voice chat in production.
+
+Add optional public variables such as `NEXT_PUBLIC_DOCS_EDIT_URL`, `NEXT_PUBLIC_DOCS_FEEDBACK_ENDPOINT`, and analytics settings only when you need those features.
 
 ## Use the free tier
 

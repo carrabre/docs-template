@@ -1,0 +1,65 @@
+---
+title: "AI resources"
+description: "Use the starter's Markdown exports, MCP endpoint, context actions, and optional voice assistant with AI tools."
+icon: "brain-circuit"
+tag: "AI"
+---
+
+This page collects the AI-native surfaces in the starter. Use them when you want AI tools to read the docs in a structured, source-aware way.
+
+## Markdown resources
+
+The starter exposes Markdown for humans and tools:
+
+- `/llms.txt`: A compact index of listed pages.
+- `/llms-full.txt`: A full Markdown export of listed pages.
+- `/<slug>.md`: A per-page Markdown export.
+- `/api/markdown/<slug>.md`: The direct Markdown API route.
+
+Use **View as Markdown** from the page action menu to inspect the generated Markdown for the current page.
+
+## MCP resources
+
+The `/mcp` route exposes tools, resources, and prompts for MCP clients.
+
+<TypeTable title="MCP capabilities">
+  <TypeTable.Property name="search_docs" type="tool" required>
+    Search public page and section content.
+  </TypeTable.Property>
+  <TypeTable.Property name="read_doc" type="tool" required>
+    Read a page as Markdown by slug.
+  </TypeTable.Property>
+  <TypeTable.Property name="list_api_endpoints" type="tool" optional>
+    List generated OpenAPI and AsyncAPI endpoint pages.
+  </TypeTable.Property>
+  <TypeTable.Property name="docs://llms-full.txt" type="resource" optional>
+    Read the full Markdown export through MCP.
+  </TypeTable.Property>
+</TypeTable>
+
+Copy the MCP server URL from the page action menu, then add it to your MCP-compatible client.
+
+## Assistant citations
+
+The optional text assistant receives the public docs corpus, uses local search results as citation sources, and shows source chips below grounded answers. Add `OPENAI_API_KEY` only when you want chat. Search, Markdown exports, and MCP work without an AI provider key.
+
+## Voice assistant
+
+The voice assistant is disabled by default. Enable it only when you want a browser-based **Audio** panel with voice presets and live transcript history.
+
+<DoDont>
+  <Do title="Do">
+    Set `NEXT_PUBLIC_DOCS_VOICE_ASSISTANT=true`, `DOCS_VOICE_ASSISTANT_ENABLED=true`, and keep `OPENAI_API_KEY` on the server.
+  </Do>
+  <Dont title="Don't">
+    Put a standard OpenAI API key in browser code or a public environment variable.
+  </Dont>
+</DoDont>
+
+When enabled, `/api/voice/session` creates an ephemeral OpenAI Realtime client secret. The browser uses that short-lived secret to start a WebRTC session. Set `OPENAI_REALTIME_VOICE_FEMALE`, `OPENAI_REALTIME_VOICE_MALE`, and `OPENAI_REALTIME_TRANSCRIPTION_MODEL` when you want to customize the presets and transcript model.
+
+## AI context actions
+
+The page action menu can copy page context or open a provider prompt. Configure visible actions in `site.config.ts` through `siteConfig.contextual.options`.
+
+Next step: [Search, AI, and MCP](/search-ai-and-mcp)

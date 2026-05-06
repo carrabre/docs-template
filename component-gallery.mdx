@@ -216,7 +216,44 @@ The starter includes generated Markdown pages, `llms.txt`, and a minimal MCP end
   <img src="/logo/docs-mark.svg" alt="Blue documentation icon" />
 </Frame>
 
+<ZoomableMedia src="/logo/docs-mark.svg" alt="Documentation logo mark" caption="Click the media to inspect it in a larger overlay." />
+
+## Inline TOC and do/don't
+
+Use inline TOCs when a long guide needs a local jump list inside the main article.
+
+<InlineTOC title="Jump to examples" items="Type table:#type-and-property-tables, API endpoint:#api-style-fields, Prompt:#color-prompt-tooltip-tree-view-and-visibility" />
+
+Use do/don't blocks to compare preferred and discouraged patterns.
+
+<DoDont>
+  <Do title="Do">
+    Explain the task before listing the steps, then use concrete commands.
+  </Do>
+  <Dont title="Don't">
+    Start with product-specific assumptions that a generic starter cannot know.
+  </Dont>
+</DoDont>
+
+## Type and property tables
+
+Use type tables for props, options, metadata fields, and JSON object shapes.
+
+<TypeTable title="Page frontmatter">
+  <TypeTable.Property name="title" type="string" required>
+    Displayed as the page heading and browser title.
+  </TypeTable.Property>
+  <TypeTable.Property name="description" type="string" required>
+    Used in search, metadata, and `llms.txt` summaries.
+  </TypeTable.Property>
+  <TypeTable.Property name="tag" type="string" optional>
+    Adds a small label beside the page in navigation.
+  </TypeTable.Property>
+</TypeTable>
+
 ## API-style fields
+
+<ApiEndpoint method="GET" endpoint="/v1/demo-pages" baseUrl="https://api.example.com" auth="Bearer token" title="List demo pages" playground="/api-reference" />
 
 <ParamField path="projectId" type="string" required pre="path">
 The unique ID for the example project.

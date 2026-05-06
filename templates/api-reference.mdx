@@ -1,0 +1,43 @@
+---
+title: "API reference page"
+description: "Describe one endpoint, event, or API concept."
+---
+
+Use this template when you hand-author an API reference page instead of generating it from OpenAPI or AsyncAPI.
+
+<ApiEndpoint method="GET" endpoint="/v1/example" baseUrl="https://api.example.com" auth="Bearer token" title="Get an example" />
+
+## Parameters
+
+<ParamField path="exampleId" type="string" required>
+The unique example ID.
+</ParamField>
+
+## Request body
+
+<RequestExample title="Request">
+
+```json
+{
+  "name": "Example"
+}
+```
+
+</RequestExample>
+
+## Responses
+
+<ResponseField name="200" type="HTTP response">
+The request succeeded.
+</ResponseField>
+
+<ResponseExample title="Response">
+
+```json
+{
+  "id": "example_123",
+  "name": "Example"
+}
+```
+
+</ResponseExample>

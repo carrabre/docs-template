@@ -9,6 +9,8 @@ import {
   Loader2,
   Search,
   Send,
+  ThumbsDown,
+  ThumbsUp,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -22,8 +24,14 @@ import type {
 
 import type { SearchEntry, SearchSource } from "@/lib/search-types";
 import { siteConfig } from "@/site.config";
+import {
+  TOPBAR_PANEL_EVENT,
+  announceTopbarPanel,
+  readTopbarPanel,
+} from "@/components/topbar-panel-events";
 
 type DocsToolsProps = {
+  assistantTrigger?: "button" | "fab";
   currentSlug: string;
   currentTitle: string;
   searchIndex: SearchEntry[];
@@ -36,14 +44,13 @@ type ChatMessage = {
   content: string;
   sources?: SearchSource[];
   error?: boolean;
+  feedback?: "helpful" | "not-helpful";
 };
 
 type AssistantStatus = "unknown" | "configured" | "unconfigured";
 
-const ASSISTANT_INTRO_PROMPT =
-  "Give me a short, codebase-focused introduction to how you can help with this docs starter. Keep it relevant to the docs pages, allowlisted source files, search, the optional AI assistant, the MCP endpoint, and external AI context actions. Mention the specific files and tools I can ask about when I want to understand or customize the codebase.";
-
 export function DocsTools({
+  assistantTrigger = "fab",
   currentSlug,
   currentTitle,
   searchIndex,
@@ -63,7 +70,6 @@ export function DocsTools({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const assistantInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const hasSentIntroPromptRef = useRef(false);
   const [hasMounted, setHasMounted] = useState(false);
 
   const results = useMemo(
@@ -160,11 +166,36 @@ export function DocsTools({
   }, []);
 
   useEffect(() => {
+    function handleTopbarPanelOpen(event: Event) {
+      const panel = readTopbarPanel(event);
+
+      if (!panel) {
+        return;
+      }
+
+      if (panel !== "search") {
+        setIsSearchOpen(false);
+      }
+
+      if (panel !== "assistant") {
+        setIsAssistantOpen(false);
+      }
+    }
+
+    window.addEventListener(TOPBAR_PANEL_EVENT, handleTopbarPanelOpen);
+
+    return () => {
+      window.removeEventListener(TOPBAR_PANEL_EVENT, handleTopbarPanelOpen);
+    };
+  }, []);
+
+  useEffect(() => {
     function handleKeyDown(event: globalThis.KeyboardEvent) {
       const opensSearch = (event.metaKey || event.ctrlKey) && event.key === "k";
 
       if (showSearch && opensSearch) {
         event.preventDefault();
+        announceTopbarPanel("search");
         setIsSearchOpen(true);
       }
 
@@ -240,29 +271,6 @@ export function DocsTools({
     messagesEndRef.current?.scrollIntoView({ block: "end" });
   }, [messages, isAssistantOpen]);
 
-  useEffect(() => {
-    if (
-      !showAssistant ||
-      !isAssistantOpen ||
-      assistantStatus !== "configured" ||
-      messages.length > 0 ||
-      isAsking ||
-      hasSentIntroPromptRef.current
-    ) {
-      return;
-    }
-
-    hasSentIntroPromptRef.current = true;
-    void sendAssistantPrompt(ASSISTANT_INTRO_PROMPT);
-  }, [
-    assistantStatus,
-    isAssistantOpen,
-    isAsking,
-    messages.length,
-    sendAssistantPrompt,
-    showAssistant,
-  ]);
-
   function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (visibleResults.length === 0) {
       return;
@@ -288,6 +296,28 @@ export function DocsTools({
     event.preventDefault();
 
     await sendAssistantPrompt(draft);
+  }
+
+  function handleAssistantFeedback(
+    message: ChatMessage,
+    feedback: "helpful" | "not-helpful",
+  ) {
+    setMessages((current) =>
+      current.map((item) =>
+        item.id === message.id ? { ...item, feedback } : item,
+      ),
+    );
+
+    window.dispatchEvent(
+      new CustomEvent("docs:feedback", {
+        detail: {
+          kind: "assistant-answer",
+          currentSlug,
+          messageId: message.id,
+          value: feedback,
+        },
+      }),
+    );
   }
 
   const searchDialog =
@@ -350,13 +380,164 @@ export function DocsTools({
         )
       : null;
 
+  const assistantDialog =
+    isAssistantOpen && hasMounted
+      ? createPortal(
+          <div className="assistant-shell" role="presentation">
+            <button
+              className="assistant-scrim"
+              type="button"
+              aria-label="Close assistant"
+              onClick={() => setIsAssistantOpen(false)}
+            />
+            <aside
+              aria-label={siteConfig.assistant.name}
+              aria-modal="true"
+              className="assistant-panel"
+              role="dialog"
+            >
+              <header className="assistant-panel-header">
+                <span className="assistant-panel-icon" aria-hidden="true">
+                  <Bot size={18} />
+                </span>
+                <div>
+                  <strong>Ask AI</strong>
+                  <span>{currentTitle}</span>
+                </div>
+                <button
+                  type="button"
+                  aria-label="Close assistant"
+                  onClick={() => setIsAssistantOpen(false)}
+                >
+                  <X size={18} aria-hidden="true" />
+                </button>
+              </header>
+
+              <div className="assistant-messages">
+                {assistantStatus === "unconfigured" ? (
+                  <div className="assistant-notice">
+                    Add <code>OPENAI_API_KEY</code> to <code>.env.local</code>,
+                    optionally set <code>OPENAI_MODEL</code>, then restart the
+                    dev server. Search is still available.
+                  </div>
+                ) : null}
+
+                {messages.length === 0 && assistantStatus !== "unconfigured" ? (
+                  <div className="assistant-empty">
+                    {siteConfig.assistant.emptyState}
+                  </div>
+                ) : (
+                  messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className="assistant-message"
+                      data-role={message.role}
+                      data-error={message.error || undefined}
+                    >
+                      <div className="assistant-message-bubble">
+                        {renderAssistantText(
+                          message.content || (isAsking ? "Thinking..." : ""),
+                        )}
+                      </div>
+                      {message.sources && message.sources.length > 0 ? (
+                        <div className="assistant-sources">
+                          {message.sources.map((source) => (
+                            <Link key={source.id} href={sourceHref(source)}>
+                              <span>
+                                {source.title}
+                                {source.section !== source.title
+                                  ? ` / ${source.section}`
+                                  : ""}
+                              </span>
+                              <ArrowUpRight size={13} aria-hidden="true" />
+                            </Link>
+                          ))}
+                        </div>
+                      ) : null}
+                      {message.role === "assistant" &&
+                      message.content &&
+                      !message.error ? (
+                        <div className="assistant-feedback">
+                          <button
+                            type="button"
+                            aria-pressed={message.feedback === "helpful"}
+                            onClick={() =>
+                              handleAssistantFeedback(message, "helpful")
+                            }
+                          >
+                            <ThumbsUp size={14} aria-hidden="true" />
+                            Helpful
+                          </button>
+                          <button
+                            type="button"
+                            aria-pressed={message.feedback === "not-helpful"}
+                            onClick={() =>
+                              handleAssistantFeedback(message, "not-helpful")
+                            }
+                          >
+                            <ThumbsDown size={14} aria-hidden="true" />
+                            Not helpful
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  ))
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              <form className="assistant-form" onSubmit={handleAssistantSubmit}>
+                <textarea
+                  ref={assistantInputRef}
+                  value={draft}
+                  disabled={assistantStatus === "unconfigured" || isAsking}
+                  maxLength={2000}
+                  onChange={(event) => setDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                      event.preventDefault();
+                      event.currentTarget.form?.requestSubmit();
+                    }
+                  }}
+                  placeholder="Ask a question"
+                  rows={3}
+                />
+                <button
+                  type="submit"
+                  aria-label="Send question"
+                  disabled={
+                    assistantStatus === "unconfigured" ||
+                    isAsking ||
+                    draft.trim().length === 0
+                  }
+                >
+                  {isAsking ? (
+                    <Loader2
+                      className="assistant-loader"
+                      size={18}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <Send size={18} aria-hidden="true" />
+                  )}
+                </button>
+              </form>
+            </aside>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
     <>
       {showSearch ? (
         <button
           type="button"
           className="docs-tool-button docs-search-button"
-          onClick={() => setIsSearchOpen(true)}
+          onClick={() => {
+            announceTopbarPanel("search");
+            setIsSearchOpen(true);
+          }}
         >
           <Search size={16} aria-hidden="true" />
           <span>Search</span>
@@ -369,133 +550,24 @@ export function DocsTools({
       {showAssistant && !isAssistantOpen ? (
         <button
           type="button"
-          className="assistant-fab"
+          className={
+            assistantTrigger === "button"
+              ? "docs-tool-button docs-chat-button"
+              : "assistant-fab"
+          }
           aria-expanded={isAssistantOpen}
-          onClick={() => setIsAssistantOpen(true)}
+          onClick={() => {
+            announceTopbarPanel("assistant");
+            setIsAssistantOpen(true);
+          }}
         >
           <Bot size={18} aria-hidden="true" />
-          <span>Ask AI</span>
+          <span>{assistantTrigger === "button" ? "Chat" : "Ask AI"}</span>
         </button>
       ) : null}
 
       {searchDialog}
-
-      {isAssistantOpen ? (
-        <div className="assistant-shell" role="presentation">
-          <button
-            className="assistant-scrim"
-            type="button"
-            aria-label="Close assistant"
-            onClick={() => setIsAssistantOpen(false)}
-          />
-          <aside
-            aria-label={siteConfig.assistant.name}
-            aria-modal="true"
-            className="assistant-panel"
-            role="dialog"
-          >
-            <header className="assistant-panel-header">
-              <span className="assistant-panel-icon" aria-hidden="true">
-                <Bot size={18} />
-              </span>
-              <div>
-                <strong>Ask AI</strong>
-                <span>{currentTitle}</span>
-              </div>
-              <button
-                type="button"
-                aria-label="Close assistant"
-                onClick={() => setIsAssistantOpen(false)}
-              >
-                <X size={18} aria-hidden="true" />
-              </button>
-            </header>
-
-            <div className="assistant-messages">
-              {assistantStatus === "unconfigured" ? (
-                <div className="assistant-notice">
-                  Add <code>OPENAI_API_KEY</code> to enable AI chat. Search is
-                  still available.
-                </div>
-              ) : null}
-
-              {messages.length === 0 && assistantStatus !== "unconfigured" ? (
-                <div className="assistant-empty">
-                  {siteConfig.assistant.emptyState}
-                </div>
-              ) : (
-                messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className="assistant-message"
-                    data-role={message.role}
-                    data-error={message.error || undefined}
-                  >
-                    <div className="assistant-message-bubble">
-                      {renderAssistantText(
-                        message.content || (isAsking ? "Thinking..." : ""),
-                      )}
-                    </div>
-                    {message.sources && message.sources.length > 0 ? (
-                      <div className="assistant-sources">
-                        {message.sources.map((source) => (
-                          <Link key={source.id} href={sourceHref(source)}>
-                            <span>
-                              {source.title}
-                              {source.section !== source.title
-                                ? ` / ${source.section}`
-                                : ""}
-                            </span>
-                            <ArrowUpRight size={13} aria-hidden="true" />
-                          </Link>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                ))
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            <form className="assistant-form" onSubmit={handleAssistantSubmit}>
-              <textarea
-                ref={assistantInputRef}
-                value={draft}
-                disabled={assistantStatus === "unconfigured" || isAsking}
-                maxLength={2000}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && !event.shiftKey) {
-                    event.preventDefault();
-                    event.currentTarget.form?.requestSubmit();
-                  }
-                }}
-                placeholder="Ask a question"
-                rows={3}
-              />
-              <button
-                type="submit"
-                aria-label="Send question"
-                disabled={
-                  assistantStatus === "unconfigured" ||
-                  isAsking ||
-                  draft.trim().length === 0
-                }
-              >
-                {isAsking ? (
-                  <Loader2
-                    className="assistant-loader"
-                    size={18}
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <Send size={18} aria-hidden="true" />
-                )}
-              </button>
-            </form>
-          </aside>
-        </div>
-      ) : null}
+      {assistantDialog}
     </>
   );
 }

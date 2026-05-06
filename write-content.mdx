@@ -1,6 +1,6 @@
 ---
 title: "Write content"
-description: "Create MDX documentation pages with frontmatter, links, callouts, cards, steps, tabs, and code examples."
+description: "Create MDX documentation pages with frontmatter, links, callouts, cards, steps, tabs, type tables, prompts, and code examples."
 ---
 
 Write pages as MDX files in the project root. Each page should teach one clear task, concept, or reference topic.
@@ -46,6 +46,8 @@ Every page should include:
 - `title`: The page heading and search result title.
 - `description`: A short summary for search, metadata, and page previews.
 - `sidebarTitle`: Optional shorter label for navigation.
+- `icon`: Optional Lucide icon name for navigation.
+- `tag`: Optional small navigation label.
 
 ## Links
 
@@ -78,6 +80,8 @@ Use components when they make the content easier to scan.
 Keep components practical. Plain Markdown is usually best for ordinary paragraphs and lists.
 </Tip>
 
+Open [Component gallery](/component-gallery) to preview the full component set, including file trees, property tables, API blocks, do/don't blocks, zoomable media, language switchers, inline TOCs, prompts, and changelog updates.
+
 ## Steps
 
 Use steps for ordered workflows:
@@ -85,7 +89,7 @@ Use steps for ordered workflows:
 <Steps>
   <Step>Open the file you want to edit.</Step>
   <Step>Make one focused change.</Step>
-  <Step>Run `npm run type-check` before you publish.</Step>
+  <Step>Run `npm run validate:docs` and `npm run type-check` before you publish.</Step>
 </Steps>
 
 ## Tabs

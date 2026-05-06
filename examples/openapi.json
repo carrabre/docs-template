@@ -5,6 +5,17 @@
     "version": "0.1.0",
     "description": "Dummy API data for previewing generated reference pages."
   },
+  "servers": [
+    {
+      "url": "https://api.example.com",
+      "description": "Demo API server"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
   "paths": {
     "/v1/demo-pages": {
       "get": {
@@ -90,6 +101,13 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "token"
+      }
+    },
     "schemas": {
       "DemoPage": {
         "type": "object",

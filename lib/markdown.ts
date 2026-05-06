@@ -158,6 +158,66 @@ function normalizeMdxPart(content: string): string {
   );
 
   next = next.replace(
+    /<(ApiEndpoint|ApiBlock)\b([^>]*)\/>/g,
+    (_, _component: string, attrs: string) => {
+      const method = getAttribute(attrs, "method") ?? "GET";
+      const endpoint =
+        getAttribute(attrs, "endpoint") ?? getAttribute(attrs, "path") ?? "/";
+      const baseUrl = getAttribute(attrs, "baseUrl");
+      const auth = getAttribute(attrs, "auth");
+      const title = getAttribute(attrs, "title");
+      const url = baseUrl ? `${baseUrl.replace(/\/+$/, "")}${endpoint}` : endpoint;
+
+      return `\n### ${title ?? `${method.toUpperCase()} ${endpoint}`}\n\n\`${method.toUpperCase()} ${url}\`${auth ? `\n\nAuthentication: ${auth}` : ""}\n`;
+    },
+  );
+
+  next = next.replace(
+    /<(InlineTOC|InlineToc)\b([^>]*)>\s*([\s\S]*?)\s*<\/\1>/g,
+    (_, _component: string, attrs: string, body: string) => {
+      const title = getAttribute(attrs, "title") ?? "On this page";
+      const items = getAttribute(attrs, "items");
+      return `\n### ${title}\n\n${items ? normalizeInlineTocItems(items) : normalizePageContent(body)}\n`;
+    },
+  );
+
+  next = next.replace(
+    /<(TypeTable|PropertyTable)\b([^>]*)>\s*([\s\S]*?)\s*<\/\1>/g,
+    (_, _component: string, attrs: string, body: string) => {
+      const title = getAttribute(attrs, "title") ?? "Properties";
+      return `\n### ${title}\n\n${normalizeTypeTable(body)}\n`;
+    },
+  );
+
+  next = next.replace(
+    /<DoDont\b[^>]*>\s*([\s\S]*?)\s*<\/DoDont>/g,
+    (_, body: string) => `${normalizePageContent(body)}\n`,
+  );
+
+  next = next.replace(
+    /<(Do|Dont)\b([^>]*)>\s*([\s\S]*?)\s*<\/\1>/g,
+    (_, component: string, attrs: string, body: string) => {
+      const label = getAttribute(attrs, "title") ?? (component === "Do" ? "Do" : "Don't");
+      return `\n### ${label}\n\n${normalizePageContent(body)}\n`;
+    },
+  );
+
+  next = next.replace(
+    /<ZoomableMedia\b([^>]*)\/>/g,
+    (_, attrs: string) => {
+      const caption = getAttribute(attrs, "caption");
+      const alt = getAttribute(attrs, "alt");
+      const src = getAttribute(attrs, "src");
+
+      if (!src) {
+        return caption || alt || "";
+      }
+
+      return `![${alt ?? caption ?? "Image"}](${absoluteDocsUrl(src)})${caption ? `\n\n${caption}` : ""}`;
+    },
+  );
+
+  next = next.replace(
     /<View\b([^>]*)>\s*([\s\S]*?)\s*<\/View>/g,
     (_, attrs: string, body: string) => {
       const title = getAttribute(attrs, "title") ?? "View";
@@ -324,6 +384,41 @@ function normalizeSteps(value: string): string {
       return `${index}. ${title ? `${title}: ` : ""}${text}\n`;
     },
   );
+}
+
+function normalizeTypeTable(value: string): string {
+  const rows = value.replace(
+    /<(?:TypeTable\.)?Property\b([^>]*)>\s*([\s\S]*?)\s*<\/(?:TypeTable\.)?Property>/g,
+    (_, attrs: string, body: string) => {
+      const name = getAttribute(attrs, "name") ?? "property";
+      const type = getAttribute(attrs, "type") ?? "unknown";
+      const required = /\srequired(?:\s|>|$)/.test(attrs) ? ", required" : "";
+      const optional = /\soptional(?:\s|>|$)/.test(attrs) ? ", optional" : "";
+      const defaultValue = getAttribute(attrs, "default");
+      const metadata = [
+        type,
+        required.replace(/^, /, ""),
+        optional.replace(/^, /, ""),
+        defaultValue ? `default: ${defaultValue}` : "",
+      ].filter(Boolean);
+
+      return `- \`${name}\` (${metadata.join(", ")}): ${cleanInlineText(body)}\n`;
+    },
+  );
+
+  return rows.replace(/<\/?[^>]+>/g, "").trim();
+}
+
+function normalizeInlineTocItems(value: string): string {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => {
+      const [label, href] = item.split(":").map((part) => part.trim());
+      return `- [${label}](${absoluteDocsUrl(href || `#${label}`)})`;
+    })
+    .join("\n");
 }
 
 function normalizeColor(value: string): string {

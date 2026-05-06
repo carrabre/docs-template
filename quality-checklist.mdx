@@ -1,0 +1,56 @@
+---
+title: "Quality checklist"
+description: "Check content, links, metadata, AI resources, API references, and deployment readiness before publishing."
+icon: "list-checks"
+tag: "Ops"
+---
+
+Use this checklist before you publish a docs site from the starter. It focuses on generic docs-site quality and Vercel-safe defaults.
+
+## Content checks
+
+- Every public page has `title` and `description` frontmatter.
+- Headings use sentence case and do not duplicate anchors on the same page.
+- Internal links use root-relative paths, such as `/getting-started`.
+- Page examples use placeholder-safe values until you replace them.
+
+## Navigation checks
+
+- Every public page appears in `site.config.ts` navigation.
+- External links include full `https://` URLs.
+- Tags and icons help scanning without replacing clear titles.
+- Generated API pages appear under a clear API reference group.
+
+## API checks
+
+- OpenAPI and AsyncAPI files exist at the paths configured in `site.config.ts`.
+- Example requests do not use production credentials.
+- The Scalar playground is safe for your API before you expose live request execution.
+- Generated endpoint pages include base URL, auth, params, bodies, responses, schemas, and code samples.
+
+## AI checks
+
+- `/llms.txt`, `/llms-full.txt`, and per-page `.md` routes load.
+- `/mcp` lists the tools, resources, and prompts you expect.
+- Paid AI features are clearly optional.
+- `OPENAI_API_KEY` is set only when you want the text or voice assistant.
+- `NEXT_PUBLIC_DOCS_VOICE_ASSISTANT` stays unset unless you want browser voice chat.
+
+## Operations checks
+
+- Page feedback is enabled or intentionally disabled.
+- Analytics hooks are configured only with public script URLs and public site IDs.
+- `sitemap.xml` and `robots.txt` load after deployment.
+- Canonical URLs use `NEXT_PUBLIC_SITE_URL`.
+- Edit links work when `NEXT_PUBLIC_DOCS_EDIT_URL` is configured.
+
+Run the local gates before you publish:
+
+```bash title="Publish checks"
+npm run validate:docs
+npm run check:links
+npm run type-check
+npm run build
+```
+
+Next step: [Deploy to Vercel](/deploy-to-vercel)

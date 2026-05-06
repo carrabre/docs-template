@@ -1,6 +1,6 @@
 ---
 title: "Next.js Docs Starter"
-description: "Launch a clean documentation site with MDX, local search, optional AI help, and a Vercel-ready Next.js app."
+description: "Launch an AI-native documentation site with MDX, local search, generated API references, optional AI help, and Vercel-ready defaults."
 ---
 
 <div className="starter-overview-hero">
@@ -12,16 +12,19 @@ description: "Launch a clean documentation site with MDX, local search, optional
   </div>
 </div>
 
-This template gives you a small, practical documentation site that works like a normal Next.js app. It includes navigation, MDX pages, theme switching, local search, generated Markdown pages, `llms.txt`, and optional AI tools.
+This template gives you a practical documentation site that works like a normal Next.js app. It includes rich navigation, MDX pages, theme switching, local search, generated API references, Markdown exports, `llms.txt`, MCP, feedback, and optional AI tools.
 
 ## What is included
 
 - A Next.js App Router site that renders root-level `.mdx` pages.
-- A typed `site.config.ts` file for metadata, navigation, theme, header links, AI actions, and MCP settings.
+- A typed `site.config.ts` file for metadata, rich navigation, API references, theme, header links, AI actions, and MCP settings.
+- A component set for guides, API docs, examples, prompts, file trees, type tables, and changelogs.
 - Local search across page titles, descriptions, headings, and body text.
 - Markdown versions of every page for readers and AI tools.
-- Optional AI chat and external AI context actions.
-- A minimal MCP endpoint for searching and reading docs.
+- Generated OpenAPI and AsyncAPI pages with an optional Scalar playground.
+- Optional AI chat, voice chat, and external AI context actions.
+- An MCP endpoint with docs tools, resources, and prompts.
+- Page feedback, optional analytics hooks, sitemap, robots, canonical metadata, edit links, and docs validation.
 - Vercel-friendly defaults that work on the free Hobby plan for personal projects.
 
 ## How the starter is organized
@@ -31,10 +34,16 @@ This template gives you a small, practical documentation site that works like a 
     Install dependencies, start the local server, and learn the project layout.
   </Card>
   <Card title="Write content" icon="message-square" href="/write-content">
-    Add MDX pages, frontmatter, callouts, cards, tabs, steps, and code blocks.
+    Add MDX pages, frontmatter, components, prompts, examples, and code blocks.
   </Card>
   <Card title="Customize the site" icon="settings-2" href="/customize-site">
-    Update branding, navigation, metadata, theme colors, and header links.
+    Update branding, navigation, metadata, API references, theme colors, and header links.
+  </Card>
+  <Card title="Use AI resources" icon="brain-circuit" href="/ai-resources">
+    Connect Markdown exports, MCP, page context actions, and optional assistants.
+  </Card>
+  <Card title="Review quality" icon="list-checks" href="/quality-checklist">
+    Validate content, links, API specs, metadata, and deployment readiness.
   </Card>
   <Card title="Deploy on Vercel" icon="compass" href="/deploy-to-vercel">
     Connect your repository and publish the site with Vercel's Next.js defaults.

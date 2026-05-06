@@ -1,17 +1,21 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Menu } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, ExternalLink, Menu, Pencil } from "lucide-react";
 
 import { DocsTools } from "@/components/docs-tools";
+import { DocsIcon } from "@/components/docs-icon";
 import {
   DocsLayout,
   DocsSidePanelAside,
   DocsSidePanelProvider,
 } from "@/components/docs-side-panel";
 import { DocsViewProvider } from "@/components/docs-view";
+import { PageFeedback } from "@/components/page-feedback";
 import { PageContextMenu } from "@/components/page-context-menu";
 import { SiteBanner } from "@/components/site-banner";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { TopbarNav } from "@/components/topbar-nav";
+import { VoiceAssistant } from "@/components/voice-assistant";
 import type { Heading, NavGroup, PageMeta } from "@/lib/docs";
 import { markdownPathForSlug, sourceUrlForSlug } from "@/lib/markdown";
 import type { SearchEntry } from "@/lib/search-types";
@@ -59,29 +63,26 @@ export function DocsShell({
         </Link>
 
         <div className="topbar-actions">
-          <nav className="topbar-nav" aria-label="Primary">
-            {siteConfig.header.links.map((link) => (
-              <Link key={link.href} href={link.href}>
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <TopbarNav links={siteConfig.header.links} />
           <DocsTools
             currentSlug={currentPage.slug}
             currentTitle={currentPage.title}
             searchIndex={searchIndex}
             variant="search"
           />
+          <div className="docs-ai-actions" aria-label="AI tools">
+            <DocsTools
+              assistantTrigger="button"
+              currentSlug={currentPage.slug}
+              currentTitle={currentPage.title}
+              searchIndex={searchIndex}
+              variant="assistant"
+            />
+            <VoiceAssistant />
+          </div>
           <ThemeSwitch />
         </div>
       </header>
-
-      <DocsTools
-        currentSlug={currentPage.slug}
-        currentTitle={currentPage.title}
-        searchIndex={searchIndex}
-        variant="assistant"
-      />
 
       {siteConfig.banner ? (
         <SiteBanner
@@ -128,9 +129,26 @@ export function DocsShell({
               {currentPage.description ? (
                 <p className="doc-description">{currentPage.description}</p>
               ) : null}
+              {currentPage.lastUpdated || currentPage.editUrl ? (
+                <div className="doc-meta">
+                  {currentPage.lastUpdated ? (
+                    <span>
+                      <CalendarDays size={15} aria-hidden="true" />
+                      Updated {formatDate(currentPage.lastUpdated)}
+                    </span>
+                  ) : null}
+                  {currentPage.editUrl ? (
+                    <a href={currentPage.editUrl} target="_blank" rel="noreferrer">
+                      <Pencil size={15} aria-hidden="true" />
+                      Edit this page
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
               <DocsViewProvider>
                 <div className="mdx-content">{children}</div>
               </DocsViewProvider>
+              <PageFeedback slug={currentPage.slug} title={currentPage.title} />
             </article>
 
             <nav className="page-footer" aria-label="Page">
@@ -209,7 +227,7 @@ function DocsNavigation({
                 target="_blank"
                 rel="noreferrer"
               >
-                {page.sidebarTitle}
+                <NavPageLabel page={page} />
               </a>
             ) : (
               <Link
@@ -217,7 +235,7 @@ function DocsNavigation({
                 href={page.route}
                 aria-current={page.slug === currentSlug ? "page" : undefined}
               >
-                {page.sidebarTitle}
+                <NavPageLabel page={page} />
               </Link>
             ),
           )}
@@ -225,4 +243,33 @@ function DocsNavigation({
       ))}
     </nav>
   );
+}
+
+function NavPageLabel({ page }: { page: PageMeta }) {
+  return (
+    <>
+      {page.icon ? (
+        <span className="docs-nav-icon" aria-hidden="true">
+          <DocsIcon icon={page.icon} size={15} />
+        </span>
+      ) : null}
+      <span className="docs-nav-title">{page.sidebarTitle}</span>
+      {page.tag ? <span className="docs-nav-tag">{page.tag}</span> : null}
+      {page.external ? <ExternalLink size={13} aria-hidden="true" /> : null}
+    </>
+  );
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.valueOf())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }

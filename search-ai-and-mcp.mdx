@@ -1,6 +1,6 @@
 ---
 title: "Search, AI, and MCP"
-description: "Use local search, optional AI chat, external AI context actions, Markdown exports, llms.txt, and the MCP endpoint."
+description: "Use local search, optional AI chat and voice, external AI context actions, Markdown exports, llms.txt, and the MCP endpoint."
 ---
 
 The starter includes discovery features that work well for both humans and AI tools. Search works without setup. AI chat needs your own API key.
@@ -30,18 +30,43 @@ The app also serves:
 
 ## Optional AI chat
 
-AI chat is disabled until you add an API key:
+AI chat is available from the top-bar **Chat** button. It stays disabled until you add a server-side API key:
 
 ```bash
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 OPENAI_API_KEY=your_api_key
 OPENAI_MODEL=gpt-5.4-mini
+DOCS_ASSISTANT_MAX_CONTEXT_CHARS=80000
 ```
 
-When enabled, the assistant uses public docs excerpts, allowlisted source files, and optional web search. It does not read `.env`, `node_modules`, lockfiles, or files outside the allowlist in `lib/codebase-context.ts`.
+Restart `npm run dev` after you change `.env.local`.
+
+When enabled, the assistant receives the public docs corpus, ranked docs excerpts for citations, allowlisted source files, and optional web search. It does not read `.env`, `node_modules`, lockfiles, or files outside the allowlist in `lib/codebase-context.ts`.
 
 <Warning>
 AI chat uses a paid API key that you provide. Vercel can host the app on the free Hobby plan, but API usage is billed by your AI provider.
 </Warning>
+
+Assistant answers include source links when local docs excerpts were used. Readers can mark answers as helpful or not helpful; the feedback emits the same optional `docs:feedback` browser event as page feedback.
+
+## Optional voice chat
+
+Voice chat is disabled by default. Enable it only when you want a browser-based **Talk to docs** button:
+
+```bash
+NEXT_PUBLIC_DOCS_VOICE_ASSISTANT=true
+DOCS_VOICE_ASSISTANT_ENABLED=true
+OPENAI_API_KEY=your_api_key
+OPENAI_REALTIME_MODEL=gpt-realtime
+OPENAI_REALTIME_VOICE=marin
+OPENAI_REALTIME_VOICE_FEMALE=marin
+OPENAI_REALTIME_VOICE_MALE=cedar
+NEXT_PUBLIC_OPENAI_REALTIME_VOICE_FEMALE=marin
+NEXT_PUBLIC_OPENAI_REALTIME_VOICE_MALE=cedar
+OPENAI_REALTIME_TRANSCRIPTION_MODEL=gpt-4o-transcribe
+```
+
+The browser never receives `OPENAI_API_KEY`. The server route at `/api/voice/session` creates an ephemeral OpenAI Realtime client secret, then the browser connects to the Realtime API with WebRTC. The **Audio** panel lets readers choose the female or male preset before starting a session and shows the live transcript history while they talk.
 
 ## External AI actions
 
@@ -51,8 +76,29 @@ Choose which actions appear by editing `siteConfig.contextual.options`.
 
 ## MCP endpoint
 
-The starter includes a minimal `/mcp` endpoint with tools for searching and reading documentation pages.
+The starter includes a `/mcp` endpoint with tools, resources, and prompts for AI clients.
 
 Copy the MCP URL or install command from the page action menu. The endpoint uses the same docs search and Markdown helpers as the rest of the app.
 
-Next step: [Deploy to Vercel](/deploy-to-vercel)
+<TypeTable title="Included MCP tools">
+  <TypeTable.Property name="search_docs" type="tool" required>
+    Search public docs content and return matching sections.
+  </TypeTable.Property>
+  <TypeTable.Property name="read_doc" type="tool" required>
+    Read a page as Markdown by slug.
+  </TypeTable.Property>
+  <TypeTable.Property name="list_pages" type="tool" optional>
+    Return the page list with routes and descriptions.
+  </TypeTable.Property>
+  <TypeTable.Property name="get_page_markdown" type="tool" optional>
+    Return the same per-page Markdown used by `.md` exports.
+  </TypeTable.Property>
+  <TypeTable.Property name="list_api_endpoints" type="tool" optional>
+    List generated OpenAPI and AsyncAPI pages.
+  </TypeTable.Property>
+  <TypeTable.Property name="get_api_endpoint" type="tool" optional>
+    Read one generated API endpoint page.
+  </TypeTable.Property>
+</TypeTable>
+
+Next step: [AI resources](/ai-resources)

@@ -29,11 +29,16 @@ export type PageMeta = {
   title: string;
   sidebarTitle: string;
   description: string;
+  lastUpdated?: string;
+  editUrl?: string;
   mode?: string;
   kind?: PageKind;
   icon?: string;
   tag?: string;
   external?: boolean;
+  method?: string;
+  endpoint?: string;
+  sourcePath?: string;
 };
 
 export type Page = PageMeta & {
@@ -59,6 +64,9 @@ type Frontmatter = {
   title?: string;
   sidebarTitle?: string;
   description?: string;
+  icon?: string;
+  tag?: string;
+  lastUpdated?: string | Date;
   mode?: string;
 };
 
@@ -183,6 +191,10 @@ export function getPageMeta(slug: string): PageMeta | null {
     title,
     sidebarTitle: frontmatter.sidebarTitle ?? title,
     description: frontmatter.description ?? "",
+    editUrl: editUrlForFile(filePath),
+    icon: frontmatter.icon,
+    tag: frontmatter.tag,
+    lastUpdated: lastUpdatedForFile(filePath, frontmatter.lastUpdated),
     mode: frontmatter.mode,
     kind: "mdx",
   };
@@ -612,6 +624,8 @@ function externalPageMeta(entry: NavigationNode, href: string): PageMeta {
 function toApiMeta(page: ApiPage): PageMeta {
   return {
     ...page,
+    editUrl: editUrlForRelativePath(page.sourcePath),
+    lastUpdated: lastUpdatedForRelativePath(page.sourcePath),
     kind: "api",
   };
 }
@@ -676,6 +690,47 @@ function stringValue(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
+function lastUpdatedForFile(filePath: string, explicit?: string | Date): string {
+  if (explicit instanceof Date && !Number.isNaN(explicit.valueOf())) {
+    return explicit.toISOString();
+  }
+
+  if (typeof explicit === "string" && explicit.trim()) {
+    const date = new Date(explicit);
+
+    if (!Number.isNaN(date.valueOf())) {
+      return date.toISOString();
+    }
+  }
+
+  return fs.statSync(filePath).mtime.toISOString();
+}
+
+function lastUpdatedForRelativePath(relativePath: string): string | undefined {
+  const filePath = resolveProjectFile(relativePath.replace(/^\/+/, ""));
+
+  if (!fs.existsSync(filePath)) {
+    return undefined;
+  }
+
+  return lastUpdatedForFile(filePath);
+}
+
+function editUrlForFile(filePath: string): string | undefined {
+  const relativePath = path.relative(resolveProjectFile(), filePath);
+  return editUrlForRelativePath(relativePath);
+}
+
+function editUrlForRelativePath(relativePath: string): string | undefined {
+  const baseUrl = siteConfig.repository?.editUrl?.replace(/\/+$/, "");
+
+  if (!baseUrl) {
+    return undefined;
+  }
+
+  return `${baseUrl}/${relativePath.replace(/^\/+/, "")}`;
+}
+
 function titleFromSlug(slug: string): string {
   return slug
     .split("/")
@@ -687,7 +742,7 @@ function titleFromSlug(slug: string): string {
 
 function resolveProjectFile(...segments: string[]): string {
   const root = /* turbopackIgnore: true */ process.cwd();
-  const resolvedPath = path.resolve(root, ...segments);
+  const resolvedPath = path.resolve(/* turbopackIgnore: true */ root, ...segments);
 
   if (resolvedPath !== root && !resolvedPath.startsWith(`${root}${path.sep}`)) {
     throw new Error("Resolved documentation path must stay inside the project.");

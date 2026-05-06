@@ -7,6 +7,8 @@ import type {
 
 import { getCodebaseContext } from "@/lib/codebase-context";
 import { DOCS_ORIGIN } from "@/lib/contextual";
+import { getAllPages } from "@/lib/docs";
+import { getPageMarkdown } from "@/lib/markdown";
 import { getSearchIndex, searchDocs, toSearchSource } from "@/lib/search";
 import type { SearchEntry, SearchSource } from "@/lib/search-types";
 import { siteConfig } from "@/site.config";
@@ -19,6 +21,7 @@ const MAX_MESSAGE_CHARS = 2000;
 const MAX_SOURCES = 6;
 const MAX_SOURCE_CHARS = 12000;
 const MAX_SOURCE_CHARS_PER_ENTRY = 2600;
+const DEFAULT_FULL_DOCS_CONTEXT_CHARS = 80000;
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -72,6 +75,7 @@ export async function POST(request: Request) {
 
   const sources = collectSources(lastUserMessage.content, currentSlug);
   const sourceContext = buildSourceContext(sources);
+  const fullDocsContext = buildFullDocsContext();
   const codebaseContext = getCodebaseContext();
   const input = buildResponseInput(messages);
 
@@ -79,7 +83,11 @@ export async function POST(request: Request) {
     const stream = await getOpenAIClient().responses.create({
       model: process.env.OPENAI_MODEL || DEFAULT_MODEL,
       input,
-      instructions: buildInstructions(sourceContext, codebaseContext),
+      instructions: buildInstructions(
+        fullDocsContext,
+        sourceContext,
+        codebaseContext,
+      ),
       include: ["web_search_call.action.sources"],
       max_output_tokens: 900,
       reasoning: { effort: "none" },
@@ -224,6 +232,23 @@ function buildSourceContext(sources: SearchEntry[]): string {
   return blocks.join("\n\n");
 }
 
+function buildFullDocsContext(): string {
+  const maxChars = Number(
+    process.env.DOCS_ASSISTANT_MAX_CONTEXT_CHARS ||
+      DEFAULT_FULL_DOCS_CONTEXT_CHARS,
+  );
+  const pages = getAllPages();
+  const content = pages
+    .map((page) => getPageMarkdown(page))
+    .join("\n\n---\n\n");
+
+  if (!Number.isFinite(maxChars) || maxChars <= 0 || content.length <= maxChars) {
+    return content;
+  }
+
+  return `${content.slice(0, maxChars).trim()}\n\n[The docs context was truncated by DOCS_ASSISTANT_MAX_CONTEXT_CHARS.]`;
+}
+
 function getAssistantTools(): Tool[] {
   return [
     {
@@ -239,6 +264,7 @@ function getAssistantTools(): Tool[] {
 }
 
 function buildInstructions(
+  fullDocsContext: string,
   sourceContext: string,
   codebaseContext: string,
 ): string {
@@ -249,7 +275,7 @@ You have three context sources:
 2. Allowlisted source files from this docs codebase.
 3. Internet access through the web search tool.
 
-For questions about this template, prefer the public documentation excerpts. Use web search for current or external information, but do not invent product-specific pricing, quotas, access rules, or workflows that are not in the docs.
+For questions about this template, prefer the full public docs context. Use the ranked excerpts to choose concise citations. Use web search for current or external information, but do not invent product-specific pricing, quotas, access rules, or workflows that are not in the docs.
 
 Use the codebase context when the user asks how this docs site is built, how the assistant/search works, or where to change implementation. Do not claim access to files outside the allowlisted codebase context. Never request, reveal, or infer secrets from env files, AGENTS.md, private admin workflows, node_modules, package-lock files, or unlisted files.
 
@@ -259,7 +285,10 @@ If the docs and allowlisted codebase context do not contain enough information, 
 
 Mention source page names, file paths, or web URLs when helpful. Keep the answer short.
 
-Public docs excerpts:
+Full public docs context:
+${fullDocsContext}
+
+Ranked public docs excerpts for this question:
 ${sourceContext}
 
 Allowlisted docs codebase context:

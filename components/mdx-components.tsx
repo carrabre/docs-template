@@ -2,6 +2,7 @@ import type {
   AnchorHTMLAttributes,
   CSSProperties,
   ImgHTMLAttributes,
+  InputHTMLAttributes,
   PropsWithChildren,
   ReactElement,
   ReactNode,
@@ -25,6 +26,7 @@ import { DocsSidePanelBlock } from "@/components/docs-side-panel";
 import { CodeGroup, Tab, Tabs } from "@/components/docs-tabs";
 import { View } from "@/components/docs-view";
 import { MermaidDiagram } from "@/components/mermaid-diagram";
+import { ZoomableMedia } from "@/components/zoomable-media";
 import { slugify, textFromNode } from "@/lib/slug";
 
 type Booleanish = boolean | "true" | "false";
@@ -119,6 +121,30 @@ type UpdateProps = PropsWithChildren<{
   label?: string;
   rss?: boolean | string;
   tags?: string | string[];
+}>;
+
+type ApiEndpointProps = {
+  auth?: string;
+  baseUrl?: string;
+  endpoint?: string;
+  method?: string;
+  path?: string;
+  playground?: string;
+  title?: string;
+};
+
+type InlineTocProps = PropsWithChildren<{
+  items?: string;
+  title?: string;
+}>;
+
+type PropertyProps = PropsWithChildren<{
+  default?: string | number | boolean;
+  deprecated?: Booleanish;
+  name: string;
+  optional?: Booleanish;
+  required?: Booleanish;
+  type?: string;
 }>;
 
 const defaultCalloutIcons: Record<string, string> = {
@@ -545,6 +571,152 @@ export function ResponseExample({
   );
 }
 
+export function ApiEndpoint({
+  auth,
+  baseUrl,
+  endpoint,
+  method = "GET",
+  path,
+  playground,
+  title,
+}: ApiEndpointProps) {
+  const resolvedEndpoint = endpoint ?? path ?? "/";
+  const normalizedMethod = method.toUpperCase();
+
+  return (
+    <section className="docs-api-endpoint">
+      <div>
+        <Badge>{normalizedMethod}</Badge>
+        {title ? <strong>{title}</strong> : null}
+      </div>
+      <code>
+        {baseUrl ? `${baseUrl.replace(/\/+$/, "")}${resolvedEndpoint}` : resolvedEndpoint}
+      </code>
+      {auth || playground ? (
+        <p>
+          {auth ? <span>Auth: {auth}</span> : null}
+          {playground ? <a href={playground}>Open playground</a> : null}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+export const ApiBlock = ApiEndpoint;
+
+export function InlineTOC({
+  children,
+  items,
+  title = "On this page",
+}: InlineTocProps) {
+  const parsedItems = parseInlineTocItems(items);
+
+  return (
+    <nav className="docs-inline-toc" aria-label={title}>
+      <strong>{title}</strong>
+      {children ? (
+        <div>{children}</div>
+      ) : (
+        <ol>
+          {parsedItems.map((item) => (
+            <li key={`${item.href}-${item.label}`}>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          ))}
+        </ol>
+      )}
+    </nav>
+  );
+}
+
+function TypeTableRoot({
+  children,
+  title,
+}: PropsWithChildren<{ title?: string }>) {
+  return (
+    <section className="docs-type-table">
+      {title ? <strong>{title}</strong> : null}
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>{children}</tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function Property({
+  children,
+  default: defaultValue,
+  deprecated,
+  name,
+  optional,
+  required,
+  type = "unknown",
+}: PropertyProps) {
+  return (
+    <tr>
+      <td>
+        <code>{name}</code>
+        {isTruthy(required) ? <Badge size="sm">Required</Badge> : null}
+        {isTruthy(optional) ? <Badge size="sm">Optional</Badge> : null}
+        {isTruthy(deprecated) ? (
+          <Badge size="sm" color="red">
+            Deprecated
+          </Badge>
+        ) : null}
+      </td>
+      <td>
+        <code>{type}</code>
+      </td>
+      <td>
+        <div>{children}</div>
+        {defaultValue !== undefined ? (
+          <small>Default: {String(defaultValue)}</small>
+        ) : null}
+      </td>
+    </tr>
+  );
+}
+
+export const TypeTable = Object.assign(TypeTableRoot, {
+  Property,
+});
+
+export const PropertyTable = TypeTable;
+
+export function DoDont({ children }: PropsWithChildren) {
+  return <div className="docs-do-dont">{children}</div>;
+}
+
+export function Do({ children, title = "Do" }: PropsWithChildren<{ title?: string }>) {
+  return (
+    <section className="docs-do-dont-item docs-do">
+      <strong>{title}</strong>
+      <div>{children}</div>
+    </section>
+  );
+}
+
+export function Dont({
+  children,
+  title = "Don't",
+}: PropsWithChildren<{ title?: string }>) {
+  return (
+    <section className="docs-do-dont-item docs-dont">
+      <strong>{title}</strong>
+      <div>{children}</div>
+    </section>
+  );
+}
+
 export function Warning({ children }: PropsWithChildren) {
   return <Callout variant="warning">{children}</Callout>;
 }
@@ -857,6 +1029,10 @@ function DocsImage({
   return <img className="docs-media" alt={alt} {...props} />;
 }
 
+function DocsInput(props: InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} suppressHydrationWarning />;
+}
+
 function H2({ children }: PropsWithChildren) {
   const id = slugify(textFromNode(children));
 
@@ -1010,6 +1186,20 @@ function normalizeTags(tags?: string | string[]) {
     .filter(Boolean);
 }
 
+function parseInlineTocItems(items?: string) {
+  return (items ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => {
+      const [label, href] = item.split(":").map((part) => part.trim());
+      return {
+        href: href || `#${slugify(label)}`,
+        label,
+      };
+    });
+}
+
 function colorStyle(color: string | undefined, prefix: string) {
   if (!color || !isCssColor(color)) {
     return undefined;
@@ -1056,6 +1246,7 @@ function escapeHtml(value: string) {
 export const mdxComponents = {
   a: DocsLink,
   img: DocsImage,
+  input: DocsInput,
   Accordion,
   AccordionGroup,
   Banner,
@@ -1069,14 +1260,21 @@ export const mdxComponents = {
   Column,
   Columns,
   Danger,
+  Do,
+  Dont,
+  DoDont,
   Expandable,
   Frame,
   Icon,
   Info,
+  InlineTOC,
   Mermaid,
   Note,
   Panel,
   ParamField,
+  ApiBlock,
+  ApiEndpoint,
+  PropertyTable,
   Prompt,
   RequestExample,
   ResponseExample,
@@ -1089,11 +1287,13 @@ export const mdxComponents = {
   Tooltip,
   Tree,
   Tip,
+  TypeTable,
   Update,
   UnsupportedComponent,
   View,
   Visibility,
   Warning,
+  ZoomableMedia,
   h2: H2,
   h3: H3,
 };

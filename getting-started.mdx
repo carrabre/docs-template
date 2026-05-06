@@ -19,7 +19,7 @@ From the project root, install packages:
 npm install
 ```
 
-This installs Next.js, React, the MDX renderer, search helpers, icons, syntax highlighting, and the optional AI assistant dependency.
+This installs Next.js, React, the MDX renderer, search helpers, icons, syntax highlighting, Scalar's API reference renderer, and the optional AI assistant dependency.
 
 ## Run locally
 
@@ -41,9 +41,11 @@ Run a production build when you want to check that the site is ready to deploy:
 npm run build
 ```
 
-You can also run TypeScript checks without building:
+You can also run documentation and TypeScript checks without building:
 
 ```bash
+npm run validate:docs
+npm run check:links
 npm run type-check
 ```
 
@@ -54,6 +56,8 @@ npm run type-check
 - `components/`: Shared UI for the docs shell and MDX components.
 - `lib/`: Content loading, search, Markdown export, and helper utilities.
 - `app/`: Next.js routes, layout, API routes, and global CSS.
+- `templates/`: Starter MDX page templates.
+- `scripts/validate-docs.ts`: Authoring and link validation.
 - `public/`: Static assets such as the favicon and logo mark.
 
 ## Make your first change
